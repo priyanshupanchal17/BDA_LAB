@@ -1,0 +1,14 @@
+-- Load the data
+data = LOAD 'w9input.txt' USING PigStorage(' ') AS (User_ID:chararray, From:chararray, To:bag{tuple(email:chararray)});
+
+-- Flatten the To field
+flattened_data = FOREACH data GENERATE User_ID, FLATTEN(To) AS To;
+
+-- Group by User_ID
+grouped_data = GROUP flattened_data BY User_ID;
+
+-- Get list of sent emails for each user
+result = FOREACH grouped_data GENERATE group AS User_ID, flattened_data.To AS Sent_Emails;
+
+-- Store the result in a file
+STORE result INTO '/aakash/output1' USING PigStorage(',');
